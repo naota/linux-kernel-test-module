@@ -55,11 +55,12 @@ static int test_remove_entry(int id)
 {
 	char *ptr;
 
-	ptr = idr_find(&test_idr, id);
-	if (ptr == NULL)
-		return -EINVAL;
-
 	spin_lock(&test_lock);
+	ptr = idr_find(&test_idr, id);
+	if (ptr == NULL) {
+		spin_unlock(&test_lock);
+		return -EINVAL;
+	}
 	idr_remove(&test_idr, id);
 	spin_unlock(&test_lock);
 
@@ -101,7 +102,9 @@ static int test_proc_show(struct seq_file *f, void *arg)
 {
 	seq_printf(f, "ID   \tData\n");
 
+	spin_lock(&test_lock);
 	idr_for_each(&test_idr, test_print_idr_entry, (void *) f);
+	spin_unlock(&test_lock);
 
 	return 0;
 }

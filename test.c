@@ -132,12 +132,12 @@ static ssize_t test_proc_write(struct file *file, const char __user *buffer,
 		return -ENOMEM;
 
 	res = 0;
-	if (sscanf(buf, "new %s", str)) {
+	if (sscanf(buf, "new %s", str) == 1) {
 		res = test_new_entry(str);
-	} else if (sscanf(buf, "rm %d", &id)) {
+	} else if (sscanf(buf, "rm %d", &id) == 1) {
 		kfree(str);
 		res = test_remove_entry(id);
-	} else if (sscanf(buf, "rep %d %s", &id, str)) {
+	} else if (sscanf(buf, "rep %d %s", &id, str) == 2) {
 		res = test_replace_entry(id, str);
 	} else if (sscanf(buf, "on %d %s", &id, str) == 2) {
 		res = test_new_entry_on(id, str);

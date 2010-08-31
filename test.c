@@ -26,6 +26,31 @@ static int test_new_entry(char *str)
 	return id;
 }
 
+static int test_new_entry_on(int id, char *str)
+{
+	int ret, newid;
+
+	do {
+		if (!idr_pre_get(&test_idr, GFP_KERNEL))
+			return -ENOMEM;
+
+		spin_lock(&test_lock);
+		ret = idr_get_new_above(&test_idr, str, id, &newid);
+		spin_unlock(&test_lock);
+	} while (ret == -EAGAIN);
+
+	if (ret)
+		return -ENOMEM;
+	if (id != newid) {
+		spin_lock(&test_lock);
+		idr_remove(&test_idr, newid);
+		spin_unlock(&test_lock);
+		return -EINVAL;
+	}
+
+	return id;
+}
+
 static int test_remove_entry(int id)
 {
 	char *ptr;
@@ -108,6 +133,8 @@ static ssize_t test_proc_write(struct file *file, const char __user *buffer,
 		res = test_remove_entry(id);
 	} else if (sscanf(buf, "rep %d %s", &id, str)) {
 		res = test_replace_entry(id, str);
+	} else if (sscanf(buf, "on %d %s", &id, str) == 2) {
+		res = test_new_entry_on(id, str);
 	} else {
 		kfree(str);
 	}

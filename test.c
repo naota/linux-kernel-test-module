@@ -4,8 +4,8 @@
 #include <linux/uaccess.h>
 #include <linux/idr.h>
 
-DEFINE_SPINLOCK(test_lock);
-DEFINE_IDR(test_idr);
+static DEFINE_SPINLOCK(test_lock);
+static DEFINE_IDR(test_idr);
 
 static int test_new_entry(char *str)
 {

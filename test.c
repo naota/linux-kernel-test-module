@@ -71,13 +71,16 @@ static int test_remove_entry(int id)
 
 static int test_replace_entry(int id, char *str)
 {
-	void *res;
+	void *old;
 
 	spin_lock(&test_lock);
-	res = idr_replace(&test_idr, (void *)str, id);
+	old = idr_replace(&test_idr, (void *)str, id);
 	spin_unlock(&test_lock);
 
-	return IS_ERR(res) ? PTR_ERR(res) : 0;
+	if (IS_ERR(old))
+		return -EINVAL;
+	kfree(old);
+	return 0;
 }
 
 static int test_free_idr_entry(int id, void *p, void *data)
